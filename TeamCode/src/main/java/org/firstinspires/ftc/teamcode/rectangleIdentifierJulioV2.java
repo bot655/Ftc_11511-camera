@@ -137,7 +137,7 @@ public class rectangleIdentifierJulioV2 extends LinearOpMode {
 
             // Morphology to split grouped blobs
             Mat morphed = new Mat();
-            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(7, 7;
+            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new org.opencv.core.Size(7, 7));
             Imgproc.morphologyEx(mask, morphed, Imgproc.MORPH_OPEN, kernel);  // erosion + dilation
 
             Imgproc.findContours(morphed, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
