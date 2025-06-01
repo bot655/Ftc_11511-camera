@@ -19,7 +19,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.Locale;
 
-@TeleOp(name = "Identify Rectangles", group = "Testing")
+@TeleOp(name = "fucked camera detection", group = "Testing")
 public class rectangleIdentifierJulioV2 extends LinearOpMode {
     String allianceColour = "Blue";
     OpenCvCamera camera;
@@ -96,8 +96,8 @@ public class rectangleIdentifierJulioV2 extends LinearOpMode {
         private final double PIXELS_PER_MM = 2.0;
         private final int TARGET_WIDTH_MM = 88;
         private final int TARGET_HEIGHT_MM = 38;
-        private final int WIDTH_PX = (int)(TARGET_WIDTH_MM * PIXELS_PER_MM);
-        private final int HEIGHT_PX = (int)(TARGET_HEIGHT_MM * PIXELS_PER_MM);
+        private final int WIDTH_PX = (int) (TARGET_WIDTH_MM * PIXELS_PER_MM);
+        private final int HEIGHT_PX = (int) (TARGET_HEIGHT_MM * PIXELS_PER_MM);
         private final int TOLERANCE_PX = 20;
 
         @Override
@@ -106,18 +106,14 @@ public class rectangleIdentifierJulioV2 extends LinearOpMode {
 
             Scalar lowerYellow = new Scalar(20, 100, 100);
             Scalar upperYellow = new Scalar(30, 255, 255);
-            maskYellow.setTo(new Scalar(0));
             Core.inRange(hsv, lowerYellow, upperYellow, maskYellow);
 
-            maskRed1.setTo(new Scalar(0));
-            maskRed2.setTo(new Scalar(0));
             Core.inRange(hsv, new Scalar(0, 100, 100), new Scalar(10, 255, 255), maskRed1);
             Core.inRange(hsv, new Scalar(160, 100, 100), new Scalar(179, 255, 255), maskRed2);
             Core.bitwise_or(maskRed1, maskRed2, maskRed);
 
             Scalar lowerBlue = new Scalar(100, 100, 100);
             Scalar upperBlue = new Scalar(130, 255, 255);
-            maskBlue.setTo(new Scalar(0));
             Core.inRange(hsv, lowerBlue, upperBlue, maskBlue);
 
             if (labelMap.empty() || !labelMap.size().equals(input.size())) {
@@ -127,37 +123,43 @@ public class rectangleIdentifierJulioV2 extends LinearOpMode {
             }
             input.copyTo(labelMap);
 
-            // RED
-            contours.clear();
-            Imgproc.findContours(maskRed, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-            for (MatOfPoint contour : contours) {
-                Rect rect = Imgproc.boundingRect(contour);
-                if (Imgproc.contourArea(contour) > 500 &&
-                        Math.abs(rect.width - WIDTH_PX) <= TOLERANCE_PX &&
-                        Math.abs(rect.height - HEIGHT_PX) <= TOLERANCE_PX) {
-                    Imgproc.rectangle(labelMap, rect, new Scalar(255, 0, 0), 2);
-                    String dims = String.format(Locale.ENGLISH, "%.1fmm x %.1fmm", rect.width / PIXELS_PER_MM, rect.height / PIXELS_PER_MM);
-                    Imgproc.putText(labelMap, dims, new Point(rect.x, rect.y - 5),
-                            Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 1);
-                }
-            }
-
-            // BLUE
-            contours.clear();
-            Imgproc.findContours(maskBlue, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-            for (MatOfPoint contour : contours) {
-                Rect rect = Imgproc.boundingRect(contour);
-                if (Imgproc.contourArea(contour) > 500 &&
-                        Math.abs(rect.width - WIDTH_PX) <= TOLERANCE_PX &&
-                        Math.abs(rect.height - HEIGHT_PX) <= TOLERANCE_PX) {
-                    Imgproc.rectangle(labelMap, rect, new Scalar(0, 0, 255), 2);
-                    String dims = String.format(Locale.ENGLISH, "%.1fmm x %.1fmm", rect.width / PIXELS_PER_MM, rect.height / PIXELS_PER_MM);
-                    Imgproc.putText(labelMap, dims, new Point(rect.x, rect.y - 5),
-                            Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 1);
-                }
-            }
+            // Helper function
+            processContours(maskRed, labelMap, new Scalar(255, 0, 0), "Red");
+            processContours(maskBlue, labelMap, new Scalar(0, 0, 255), "Blue");
 
             return labelMap;
         }
+
+        private void processContours(Mat mask, Mat output, Scalar color, String label) {
+            contours.clear();
+            Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+            for (MatOfPoint contour : contours) {
+                Rect rect = Imgproc.boundingRect(contour);
+                double area = Imgproc.contourArea(contour);
+                if (area > 200) { // Lowered from 500 to detect smaller objects
+                    double widthMM = rect.width / PIXELS_PER_MM;
+                    double heightMM = rect.height / PIXELS_PER_MM;
+
+                    // Draw the rectangle
+                    Imgproc.rectangle(output, rect, color, 2);
+                    String dims = String.format(Locale.ENGLISH, "%.1fmm x %.1fmm", widthMM, heightMM);
+                    Imgproc.putText(output, dims, new Point(rect.x, rect.y - 5),
+                            Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 1);
+
+                    // Optional highlight if close to target
+                    if (Math.abs(rect.width - WIDTH_PX) <= TOLERANCE_PX &&
+                            Math.abs(rect.height - HEIGHT_PX) <= TOLERANCE_PX) {
+                        Imgproc.rectangle(output, rect, new Scalar(0, 255, 0), 3); // Green highlight
+                        Imgproc.putText(output, "Target Size", new Point(rect.x, rect.y + rect.height + 15),
+                                Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 1);
+                    }
+
+                    // Debug telemetry output (shows up in Driver Station logs)
+                    System.out.printf("%s RECT: %d x %d px (%.1fmm x %.1fmm), Area: %.1f\n",
+                            label, rect.width, rect.height, widthMM, heightMM, area);
+                }
+            }
+        }
     }
 }
+
