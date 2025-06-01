@@ -104,6 +104,17 @@ public class rectangleIdentifierJulio extends LinearOpMode {
         private Mat maskBlue = new Mat();
         private Mat labelMap = new Mat();
 
+        // Define the desired size of the bounding box in mm
+        private static final double DESIRED_WIDTH_MM = 88.0;
+        private static final double DESIRED_HEIGHT_MM = 38.0;
+
+        // Assume you have calculated the pixel-per-mm ratio for the camera
+        private static final double PIXELS_PER_MM_X = 10.0;  // Example: 10 pixels per mm along X-axis
+        private static final double PIXELS_PER_MM_Y = 10.0;  // Example: 10 pixels per mm along Y-axis
+
+        private static final int BOUNDING_BOX_WIDTH_PIXELS = (int) (DESIRED_WIDTH_MM * PIXELS_PER_MM_X);
+        private static final int BOUNDING_BOX_HEIGHT_PIXELS = (int) (DESIRED_HEIGHT_MM * PIXELS_PER_MM_Y);
+
         @Override
         public Mat processFrame(Mat input) {
             Imgproc.cvtColor(input, hsv, Imgproc.COLOR_RGB2HSV);
@@ -128,7 +139,6 @@ public class rectangleIdentifierJulio extends LinearOpMode {
             Core.inRange(hsv, lowerBlue, upperBlue, maskBlue);
 
             // Combine masks into label map (for debugging or classification purposes)
-            // You can use different colors to visualize classification
             if (labelMap.empty() || !labelMap.size().equals(input.size())) {
                 labelMap = Mat.zeros(input.size(), CvType.CV_8UC3);
             } else {
@@ -140,20 +150,28 @@ public class rectangleIdentifierJulio extends LinearOpMode {
             contours.clear();
             Imgproc.findContours(maskRed, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
             for (MatOfPoint contour : contours) {
-                Rect rect = Imgproc.boundingRect(contour);
-                if (Imgproc.contourArea(contour) > 500) {
-                    Imgproc.rectangle(labelMap, rect, new Scalar(255, 0, 0), 2); // Red boundary
-                }
+                // Instead of drawing the bounding box around the contour's actual size, use the fixed size
+                Rect fixedRect = new Rect(
+                        100,  // X position of the bounding box (can be adjusted)
+                        100,  // Y position of the bounding box (can be adjusted)
+                        BOUNDING_BOX_WIDTH_PIXELS,
+                        BOUNDING_BOX_HEIGHT_PIXELS
+                );
+                Imgproc.rectangle(labelMap, fixedRect, new Scalar(255, 0, 0), 2); // Red boundary
             }
 
             // Blue: draw bounding boxes
             contours.clear();
             Imgproc.findContours(maskBlue, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
             for (MatOfPoint contour : contours) {
-                Rect rect = Imgproc.boundingRect(contour);
-                if (Imgproc.contourArea(contour) > 500) {
-                    Imgproc.rectangle(labelMap, rect, new Scalar(0, 0, 255), 2); // Blue boundary
-                }
+                // Similarly, use a fixed-size bounding box for blue objects
+                Rect fixedRect = new Rect(
+                        200,  // X position of the bounding box (can be adjusted)
+                        200,  // Y position of the bounding box (can be adjusted)
+                        BOUNDING_BOX_WIDTH_PIXELS,
+                        BOUNDING_BOX_HEIGHT_PIXELS
+                );
+                Imgproc.rectangle(labelMap, fixedRect, new Scalar(0, 0, 255), 2); // Blue boundary
             }
 
             return labelMap;
