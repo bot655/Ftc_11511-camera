@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Size;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -22,7 +20,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.Locale;
 
 @TeleOp(name = "fucked camera detection", group = "Testing")
-public class rectangleIdentifierJulioV2 extends LinearOpMode {
+public class rectangleIdentifierv2 extends LinearOpMode {
     String allianceColour = "Blue";
     OpenCvCamera camera;
     boolean cameraOpened = false;
