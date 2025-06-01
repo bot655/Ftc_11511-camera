@@ -19,7 +19,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.Locale;
 
-@TeleOp(name = "fucked camera detection", group = "Testing")
+@TeleOp(name = "camera detection??", group = "Testing")
 public class rectangleIdentifierv2 extends LinearOpMode {
     String allianceColour = "Blue";
     OpenCvCamera camera;
