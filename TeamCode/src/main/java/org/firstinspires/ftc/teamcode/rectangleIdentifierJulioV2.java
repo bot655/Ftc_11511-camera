@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Size;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -132,34 +134,42 @@ public class rectangleIdentifierJulioV2 extends LinearOpMode {
 
         private void processContours(Mat mask, Mat output, Scalar color, String label) {
             contours.clear();
-            Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+            // Morphology to split grouped blobs
+            Mat morphed = new Mat();
+            Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(7, 7;
+            Imgproc.morphologyEx(mask, morphed, Imgproc.MORPH_OPEN, kernel);  // erosion + dilation
+
+            Imgproc.findContours(morphed, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
             for (MatOfPoint contour : contours) {
                 Rect rect = Imgproc.boundingRect(contour);
                 double area = Imgproc.contourArea(contour);
-                if (area > 200) { // Lowered from 500 to detect smaller objects
+                if (area > 200) {
                     double widthMM = rect.width / PIXELS_PER_MM;
                     double heightMM = rect.height / PIXELS_PER_MM;
 
-                    // Draw the rectangle
                     Imgproc.rectangle(output, rect, color, 2);
                     String dims = String.format(Locale.ENGLISH, "%.1fmm x %.1fmm", widthMM, heightMM);
                     Imgproc.putText(output, dims, new Point(rect.x, rect.y - 5),
                             Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 1);
 
-                    // Optional highlight if close to target
                     if (Math.abs(rect.width - WIDTH_PX) <= TOLERANCE_PX &&
                             Math.abs(rect.height - HEIGHT_PX) <= TOLERANCE_PX) {
-                        Imgproc.rectangle(output, rect, new Scalar(0, 255, 0), 3); // Green highlight
+                        Imgproc.rectangle(output, rect, new Scalar(0, 255, 0), 3);
                         Imgproc.putText(output, "Target Size", new Point(rect.x, rect.y + rect.height + 15),
                                 Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 1);
                     }
 
-                    // Debug telemetry output (shows up in Driver Station logs)
                     System.out.printf("%s RECT: %d x %d px (%.1fmm x %.1fmm), Area: %.1f\n",
                             label, rect.width, rect.height, widthMM, heightMM, area);
                 }
             }
+
+            morphed.release();
+            kernel.release();
         }
+
     }
 }
 
