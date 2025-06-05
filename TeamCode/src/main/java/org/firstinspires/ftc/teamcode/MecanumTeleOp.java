@@ -15,6 +15,7 @@ public class MecanumTeleOp extends LinearOpMode {
         DcMotor leftRear = hardwareMap.dcMotor.get("leftRear");
         DcMotor rightFront = hardwareMap.dcMotor.get("rightFront");
         DcMotor rightRear = hardwareMap.dcMotor.get("rightRear");
+        DcMotor big_arm = hardwareMap.dcMotor.get("arm");
 
         // Reverse the right side motors. This may be wrong for your setup.
         // If your robot moves backwards when commanded to go forwards,
@@ -45,6 +46,13 @@ public class MecanumTeleOp extends LinearOpMode {
             leftRear.setPower(leftRearPower);
             rightFront.setPower(rightFrontPower);
             rightRear.setPower(rightRearPower);
+
+            double maxArmSpeed = 0.5;
+            double armUpPower = gamepad1.right_trigger;  // 0 to 1
+            double armDownPower = gamepad1.left_trigger;
+            double armPower = (armUpPower - armDownPower) * maxArmSpeed;
+
+            big_arm.setPower(armPower);
         }
     }
 }
