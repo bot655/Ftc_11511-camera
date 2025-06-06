@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name="Basic: MecanumTeleOp")
 public class MecanumTeleOp extends LinearOpMode {
@@ -15,7 +16,7 @@ public class MecanumTeleOp extends LinearOpMode {
         DcMotor leftRear = hardwareMap.dcMotor.get("leftRear");
         DcMotor rightFront = hardwareMap.dcMotor.get("rightFront");
         DcMotor rightRear = hardwareMap.dcMotor.get("rightRear");
-        DcMotor big_arm = hardwareMap.dcMotor.get("arm");
+        Servo claw = hardwareMap.servo.get("claw");
 
         // Reverse the right side motors. This may be wrong for your setup.
         // If your robot moves backwards when commanded to go forwards,
@@ -29,6 +30,13 @@ public class MecanumTeleOp extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
+            // Claw control
+            if (gamepad1.x) {
+                claw.setPosition(1.0); // Open
+            } else if (gamepad1.square) {
+                claw.setPosition(0.0); // Close
+            }
+
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
             double rx = gamepad1.right_stick_x;
@@ -36,23 +44,16 @@ public class MecanumTeleOp extends LinearOpMode {
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,
             // but only if at least one is out of the range [-1, 1]
-            double denominigger = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double leftFrontPower = (y + x + rx) / denominigger;
-            double leftRearPower = (y - x + rx) / denominigger;
-            double rightFrontPower = (y - x - rx) / denominigger;
-            double rightRearPower = (y + x - rx) / denominigger;
+            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            double leftFrontPower = (y + x + rx) / denominator;
+            double leftRearPower = (y - x + rx) / denominator;
+            double rightFrontPower = (y - x - rx) / denominator;
+            double rightRearPower = (y + x - rx) / denominator;
 
             leftFront.setPower(leftFrontPower);
             leftRear.setPower(leftRearPower);
             rightFront.setPower(rightFrontPower);
             rightRear.setPower(rightRearPower);
-
-            double maxArmSpeed = 0.5;
-            double armUpPower = gamepad1.right_trigger;  // 0 to 1
-            double armDownPower = gamepad1.left_trigger;
-            double armPower = (armUpPower - armDownPower) * maxArmSpeed;
-
-            big_arm.setPower(armPower);
         }
     }
 }
