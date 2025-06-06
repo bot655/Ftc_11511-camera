@@ -30,7 +30,7 @@ public class MecanumTeleOp extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            // Claw control
+            // Claw` control
             if (gamepad1.x) {
                 claw.setPosition(1.0); // Open
             } else if (gamepad1.square) {
