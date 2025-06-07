@@ -39,8 +39,8 @@ public class AverageColorBigBlackBoxAKAnigger extends LinearOpMode {
             @Override
             public void onOpened() {
                 try {
-                    // camera.setPixelFormat(OpenCvCamera.PixelFormat.MJPEG); // from yuy2 to mjpeg
-                    // camera.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW); // more framerate?
+                    //camera.StreamFormat.MJPEG; // from yuy2 to mjpeg
+                    camera.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW); // more framerate?
                     camera.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
                     cameraOpened = true;
                 } catch (Exception e) {
