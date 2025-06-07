@@ -41,7 +41,6 @@ public class FuckThisShitBro extends LinearOpMode {
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, viewId);
         // Note: setLensIntrinsics is not supported on external webcams in EasyOpenCV
-        // Intrinsics calibration is only available for internal phone camera
 
         pipeline = new ColorClassificationPipeline();
         camera.setPipeline(pipeline);
@@ -95,10 +94,9 @@ public class FuckThisShitBro extends LinearOpMode {
 
         // Calibration: 2 pixels per mm
         private final double PIXELS_PER_MM = 2.0;
-        private final int TARGET_WIDTH_MM = 88;
-        private final int TARGET_HEIGHT_MM = 38;
-        private final int WIDTH_PX = (int) (TARGET_WIDTH_MM * PIXELS_PER_MM);
-        private final int HEIGHT_PX = (int) (TARGET_HEIGHT_MM * PIXELS_PER_MM);
+        // Size bounds in mm
+        private final double MIN_SIZE_MM = 33.0;
+        private final double MAX_SIZE_MM = 88.0;
         private final int TOLERANCE_PX = 20;
 
         private Mat labelMap = new Mat();
@@ -122,7 +120,6 @@ public class FuckThisShitBro extends LinearOpMode {
             }
             input.copyTo(labelMap);
 
-            // draw rotated boxes
             processContours(maskRed, labelMap, new Scalar(255, 0, 0), "Red");
             processContours(maskBlue, labelMap, new Scalar(0, 0, 255), "Blue");
 
@@ -132,7 +129,6 @@ public class FuckThisShitBro extends LinearOpMode {
         private void processContours(Mat mask, Mat output, Scalar drawColor, String label) {
             contours.clear();
 
-            // clean up
             Mat morphed = new Mat();
             Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(7, 7));
             Imgproc.morphologyEx(mask, morphed, Imgproc.MORPH_OPEN, kernel);
@@ -143,24 +139,29 @@ public class FuckThisShitBro extends LinearOpMode {
                 double area = Imgproc.contourArea(contour);
                 if (area > 200) {
                     RotatedRect rRect = Imgproc.minAreaRect(new MatOfPoint2f(contour.toArray()));
+                    double widthMM = rRect.size.width / PIXELS_PER_MM;
+                    double heightMM = rRect.size.height / PIXELS_PER_MM;
+
+                    // only draw boxes within desired size range
+                    if (widthMM < MIN_SIZE_MM || widthMM > MAX_SIZE_MM || heightMM < MIN_SIZE_MM || heightMM > MAX_SIZE_MM) {
+                        continue;
+                    }
+
                     Point[] vertices = new Point[4];
                     rRect.points(vertices);
-
-                    // draw rotated rect
                     for (int i = 0; i < 4; i++) {
                         Imgproc.line(output, vertices[i], vertices[(i + 1) % 4], drawColor, 2);
                     }
 
-                    // measure
-                    double widthMM = rRect.size.width / PIXELS_PER_MM;
-                    double heightMM = rRect.size.height / PIXELS_PER_MM;
                     String dims = String.format(Locale.ENGLISH, "%.1fmm x %.1fmm", widthMM, heightMM);
                     Imgproc.putText(output, dims, rRect.center, Imgproc.FONT_HERSHEY_SIMPLEX, 0.5,
                             new Scalar(255, 255, 255), 1);
 
-                    // highlight target
-                    if (Math.abs(rRect.size.width - WIDTH_PX) <= TOLERANCE_PX &&
-                            Math.abs(rRect.size.height - HEIGHT_PX) <= TOLERANCE_PX) {
+                    // highlight if within target tolerance
+                    double targetPxW = MAX_SIZE_MM * PIXELS_PER_MM;
+                    double targetPxH = MIN_SIZE_MM * PIXELS_PER_MM;
+                    if (Math.abs(rRect.size.width - targetPxW) <= TOLERANCE_PX &&
+                            Math.abs(rRect.size.height - targetPxH) <= TOLERANCE_PX) {
                         for (int i = 0; i < 4; i++) {
                             Imgproc.line(output, vertices[i], vertices[(i + 1) % 4], new Scalar(0, 255, 0), 3);
                         }
