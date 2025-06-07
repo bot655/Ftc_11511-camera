@@ -4,14 +4,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -48,8 +46,6 @@ public class polygonsandcirclesKeen extends LinearOpMode {
                     camera.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
                     cameraOpened = true;
                 } catch (Exception e) {
-                    telemetry.addLine("640x480 failed, trying lower resolution...");
-                    telemetry.update();
                     try {
                         camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                         cameraOpened = true;
@@ -72,8 +68,8 @@ public class polygonsandcirclesKeen extends LinearOpMode {
         while (opModeIsActive()) {
             if (!cameraOpened) {
                 telemetry.addLine("Camera not opened");
-                telemetry.update();
             }
+            telemetry.update();
             sleep(50);
         }
 
@@ -94,8 +90,8 @@ public class polygonsandcirclesKeen extends LinearOpMode {
         public Mat processFrame(Mat input) {
             Imgproc.cvtColor(input, hsv, Imgproc.COLOR_RGB2HSV);
 
-            Core.inRange(hsv, new Scalar(0, 100, 100), new Scalar(10, 255, 255), maskRed);
-            Core.inRange(hsv, new Scalar(100, 100, 100), new Scalar(130, 255, 255), maskBlue);
+            Core.inRange(hsv, new Scalar(0, 50, 50), new Scalar(15, 255, 255), maskRed);
+            Core.inRange(hsv, new Scalar(90, 50, 50), new Scalar(140, 255, 255), maskBlue);
 
             input.copyTo(output);
 
@@ -152,7 +148,10 @@ public class polygonsandcirclesKeen extends LinearOpMode {
                 Point center = new Point(moments.m10 / moments.m00, moments.m01 / moments.m00);
 
                 Imgproc.drawContours(outputImage, List.of(new MatOfPoint(points)), -1, color, 2);
-                Imgproc.putText(outputImage, shapeLabel, center, Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 2);
+
+                String areaLabel = String.format("%.0f px", area);
+                Imgproc.putText(outputImage, shapeLabel, center, Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(255, 255, 255), 1);
+                Imgproc.putText(outputImage, areaLabel, new Point(center.x, center.y + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(200, 200, 255), 1);
 
                 curve.release();
                 approxCurve.release();
