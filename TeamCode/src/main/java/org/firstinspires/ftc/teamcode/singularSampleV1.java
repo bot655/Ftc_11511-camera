@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-@TeleOp(name = "Singular Samples", group = "Testing")
+@TeleOp(name = "Singular Sample", group = "Testing")
 public class singularSampleV1 extends LinearOpMode {
     private OpenCvWebcam camera;
     private boolean cameraOpened = false;
