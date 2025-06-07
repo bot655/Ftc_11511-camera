@@ -18,10 +18,8 @@ public class MecanumTeleOp extends LinearOpMode {
         DcMotor big_arm = hardwareMap.dcMotor.get("arm");
 
         // Servo
-        Servo claw = hardwareMap.servo.get("claw"); // make sure your config name matches
-
-        // Set servo initial position
-        claw.setPosition(0.0); // Closed by default
+        Servo claw = hardwareMap.servo.get("claw");
+        claw.setPosition(0.0);
 
         // Reverse right side motors
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -54,9 +52,9 @@ public class MecanumTeleOp extends LinearOpMode {
 
             // Servo control
             if (gamepad1.square) {
-                claw.setPosition(1.0); // Open
+                claw.setPosition(1.0);
             } else if (gamepad1.x) {
-                claw.setPosition(0.0); // Close
+                claw.setPosition(0.0);
             }
         }
     }
