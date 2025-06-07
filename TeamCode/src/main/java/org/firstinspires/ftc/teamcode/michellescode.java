@@ -25,8 +25,8 @@ import java.util.List;
 import java.util.Locale;
 
 
-@TeleOp(name = "PETER's RECTANGLE IDENTIFIER", group = "Testing")
-public class rectangleIdentifier extends LinearOpMode {
+@TeleOp(name = "MICHELLLES CODE", group = "Testing")
+public class michellescode extends LinearOpMode {
     String allianceColour = "Blue";
     OpenCvCamera camera;
     boolean cameraOpened = false;
@@ -167,15 +167,15 @@ public class rectangleIdentifier extends LinearOpMode {
                     baseLine[0] += thickness;
 
                     Point textOrg = new Point(
-                        center.x - textSize.width / 2,
-                        center.y + textSize.height / 2
+                            center.x - textSize.width / 2,
+                            center.y + textSize.height / 2
                     );
                     Imgproc.rectangle(
-                        labelMap,
-                        new Point(textOrg.x, textOrg.y + baseLine[0]),
-                        new Point(textOrg.x + textSize.width, textOrg.y - textSize.height),
-                        bgColor,
-                        Imgproc.FILLED
+                            labelMap,
+                            new Point(textOrg.x, textOrg.y + baseLine[0]),
+                            new Point(textOrg.x + textSize.width, textOrg.y - textSize.height),
+                            bgColor,
+                            Imgproc.FILLED
                     );
                     Imgproc.putText(labelMap, dims, textOrg, font, scale, textColor, thickness);
                 }
@@ -208,15 +208,15 @@ public class rectangleIdentifier extends LinearOpMode {
                     baseLine[0] += thickness;
 
                     Point textOrg = new Point(
-                        center.x - textSize.width / 2,
-                        center.y + textSize.height / 2
+                            center.x - textSize.width / 2,
+                            center.y + textSize.height / 2
                     );
                     Imgproc.rectangle(
-                        labelMap,
-                        new Point(textOrg.x, textOrg.y + baseLine[0]),
-                        new Point(textOrg.x + textSize.width, textOrg.y - textSize.height),
-                        bgColor,
-                        Imgproc.FILLED
+                            labelMap,
+                            new Point(textOrg.x, textOrg.y + baseLine[0]),
+                            new Point(textOrg.x + textSize.width, textOrg.y - textSize.height),
+                            bgColor,
+                            Imgproc.FILLED
                     );
                     Imgproc.putText(labelMap, dims, textOrg, font, scale, textColor, thickness);
                 }
