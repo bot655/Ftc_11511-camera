@@ -32,9 +32,9 @@ public class MecanumTeleOp extends LinearOpMode {
         while (opModeIsActive()) {
             // Claw` control
             if (gamepad1.x) {
-                claw.setPosition(1.0); // Open
+                claw.setPosition(1.0);
             } else if (gamepad1.square) {
-                claw.setPosition(0.0); // Close
+                claw.setPosition(0.0);
             }
 
             double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
