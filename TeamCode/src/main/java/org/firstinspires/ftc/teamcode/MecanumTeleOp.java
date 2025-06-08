@@ -50,11 +50,13 @@ public class MecanumTeleOp extends LinearOpMode {
             double armPower = (gamepad1.right_trigger - gamepad1.left_trigger) * maxArmSpeed;
             big_arm.setPower(armPower);
 
-            // Servo control
-            if (gamepad1.square) {
-                claw.setPosition(1.0);
-            } else if (gamepad1.x) {
-                claw.setPosition(0.0);
+            // Continuous rotation servo control
+            if (gamepad1.left_bumper) {
+                claw.setPosition(1.0);  // rotate forward
+            } else if (gamepad1.right_bumper) {
+                claw.setPosition(0.0);  // rotate backward
+            } else {
+                claw.setPosition(0.5);  // stop
             }
         }
     }
