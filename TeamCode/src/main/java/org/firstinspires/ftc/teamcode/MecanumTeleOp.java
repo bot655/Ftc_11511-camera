@@ -12,7 +12,8 @@ public class MecanumTeleOp extends LinearOpMode {
 
     // Arm limits
     private final int ARM_MIN_POSITION = 0;
-    private final int ARM_MAX_POSITION = 1600;
+    private final int ARM_MAX_POSITION = 533; // 1440 counts/rev * 120 deg / 360 deg
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -22,6 +23,8 @@ public class MecanumTeleOp extends LinearOpMode {
         DcMotor rightFront = hardwareMap.dcMotor.get("rightFront");
         DcMotor rightRear = hardwareMap.dcMotor.get("rightBack");
         DcMotor big_arm = hardwareMap.dcMotor.get("arm");
+        DcMotor slide = hardwareMap.dcMotor.get("slide");
+        slide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Servo
         crServo = hardwareMap.get(CRServo.class, "claw");
@@ -71,47 +74,31 @@ public class MecanumTeleOp extends LinearOpMode {
             leftRear.setPower(leftBackPower);
             rightRear.setPower(rightBackPower);
 
-            // Arm control with limits
-            double armInput = gamepad1.right_trigger - gamepad1.left_trigger;
-            int currentPos = big_arm.getCurrentPosition();
+            // Arm control - direct power from gamepad2 left stick
+            double armPower = -gamepad2.left_stick_y;
+            big_arm.setPower(armPower);
 
-            if (Math.abs(armInput) > 0.05) {
-                boolean movingUp = armInput > 0;
-                boolean movingDown = armInput < 0;
-
-                // Check if within limits
-                if ((movingUp && currentPos < ARM_MAX_POSITION) ||
-                        (movingDown && currentPos > ARM_MIN_POSITION)) {
-
-                    big_arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    big_arm.setPower(armInput * maxArmSpeed);
-                    armTargetPosition = big_arm.getCurrentPosition();
-                } else {
-                    // At limit, hold position
-                    big_arm.setTargetPosition(armTargetPosition);
-                    big_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    big_arm.setPower(0.2);
-                }
-            } else {
-                // Not moving input — hold current target
-                armTargetPosition = Math.max(ARM_MIN_POSITION, Math.min(ARM_MAX_POSITION, armTargetPosition));
-                big_arm.setTargetPosition(armTargetPosition);
-                big_arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                big_arm.setPower(0.2);
-            }
-
-            // CRServo control
-            if (gamepad2.right_trigger > 0.1) {
+            // CRServo control (updated to use gamepad2 bumpers)
+            if (gamepad2.right_bumper) {
                 crServo.setPower(1.0);
-            } else if (gamepad2.left_trigger > 0.1) {
+            } else if (gamepad2.left_bumper) {
                 crServo.setPower(-1.0);
             } else {
                 crServo.setPower(0.0);
             }
 
+            // Slide control
+            if (gamepad1.dpad_up) {
+                slide.setPower(1.0);
+            } else if (gamepad1.dpad_down) {
+                slide.setPower(-1.0);
+            } else {
+                slide.setPower(0.0);
+            }
+
             // Telemetry
-            telemetry.addData("Arm Pos", currentPos);
-            telemetry.addData("Arm Target", armTargetPosition);
+            telemetry.addData("Arm Pos", big_arm.getCurrentPosition());
+            telemetry.addData("LF Power", leftFrontPower);
             telemetry.update();
         }
     }
