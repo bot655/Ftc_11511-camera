@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name="MecanumTeleOp")
+@TeleOp(name="MecanumTeleOpV2BecausePeterFuckedTheOtherOne")
 public class MecanumTeleOpV2BecausePeterFuckedTheOtherOne extends LinearOpMode {
     private CRServo crServo;
 
