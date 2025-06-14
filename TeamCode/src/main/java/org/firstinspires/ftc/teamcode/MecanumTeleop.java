@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name="MecanumTeleOp")
-public class MecanumTeleOp extends LinearOpMode {
+public class MecanumTeleop extends LinearOpMode {
     private CRServo crServo;
 
     @Override
